@@ -69,7 +69,7 @@ This repository contains a production‑ready, full‑stack web application that
 1. **Clone the repository**
 
    ```bash
-   git clone <this‑repo>
+   git clone <https://github.com/shahram8708/AI-Comm-Assistant>
    cd ai_comm_assistant
    ```
 
