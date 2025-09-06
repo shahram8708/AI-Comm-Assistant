@@ -1,0 +1,75 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+
+  web:
+    build: .
+    restart: always
+    env_file: .env
+    environment:
+      - FLASK_ENV=${FLASK_ENV}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - MAIL_IMAP_HOST=${MAIL_IMAP_HOST}
+      - MAIL_IMAP_PORT=${MAIL_IMAP_PORT}
+      - MAIL_IMAP_USER=${MAIL_IMAP_USER}
+      - MAIL_IMAP_PASSWORD=${MAIL_IMAP_PASSWORD}
+      - MAIL_CLIENT_ID=${MAIL_CLIENT_ID}
+      - MAIL_CLIENT_SECRET=${MAIL_CLIENT_SECRET}
+      - MAIL_REFRESH_TOKEN=${MAIL_REFRESH_TOKEN}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - OFFLINE_MODE=${OFFLINE_MODE}
+      - PRIORITY_TIMEOUT_MINUTES=${PRIORITY_TIMEOUT_MINUTES}
+    volumes:
+      - .:/app
+      - attachments:/app/attachments
+    depends_on:
+      - db
+      - redis
+    ports:
+      - '5000:5000'
+    command: gunicorn --workers=4 --bind 0.0.0.0:5000 wsgi:app
+
+  worker:
+    build: .
+    restart: always
+    env_file: .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+    volumes:
+      - .:/app
+      - attachments:/app/attachments
+    depends_on:
+      - db
+      - redis
+    command: celery -A ai_comm_assistant.tasks worker --loglevel=info
+
+volumes:
+  db_data:
+  attachments:

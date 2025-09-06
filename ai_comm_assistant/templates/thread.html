@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-3">Thread: {{ thread.subject }}</h2>
+<div class="row">
+  <div class="col-md-8">
+    {% for email in thread.emails %}
+      <div class="card mb-3">
+        <div class="card-header">
+          <strong>{{ email.sender }}</strong>
+          <span class="text-muted float-end">{{ email.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+        <div class="card-body">
+          <p style="white-space: pre-wrap;">{{ email.body }}</p>
+          {% if email.attachments %}
+            <hr>
+            <p><strong>Attachments</strong></p>
+            <ul class="list-unstyled">
+              {% for att in email.attachments %}
+                <li>
+                  <i class="fa fa-paperclip"></i> {{ att.filename }}
+                  {% if att.extracted_text %}
+                    <br><small class="text-muted">Extracted: {{ att.extracted_text|truncate(80) }}</small>
+                  {% endif %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="col-md-4">
+    {% if draft %}
+      <div class="card mb-3">
+        <div class="card-header">AI Draft Reply</div>
+        <div class="card-body">
+          <div class="mb-2">
+            <strong>Trust Meter:</strong>
+            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+              <div class="progress-bar" style="width: {{ draft.coach_score }}%;" aria-valuenow="{{ draft.coach_score }}">{{ draft.coach_score }}%</div>
+            </div>
+          </div>
+          <p style="white-space: pre-wrap;">{{ draft.reply_text }}</p>
+          {% if draft.justification %}
+            <p class="small text-muted"><strong>Justification:</strong> {{ draft.justification }}</p>
+          {% endif %}
+          <!-- Coach suggestion -->
+          <p class="small text-info">
+            {% if thread.sentiment == 'negative' %}
+              Suggestion: Start your reply with an apology to address the customer’s frustration.
+            {% else %}
+              Suggestion: Ensure your tone remains {{ draft.tone }} and personalised.
+            {% endif %}
+          </p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Edit &amp; Send Reply</div>
+        <div class="card-body">
+          <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+              {{ form.reply_text.label(class_='form-label') }}
+              {{ form.reply_text(class_='form-control', rows=6, value=draft.reply_text) }}
+            </div>
+            <div class="mb-3">
+              {{ form.tone.label(class_='form-label') }}
+              {{ form.tone(class_='form-select', value=draft.tone) }}
+            </div>
+            <div class="mb-3">
+              {{ form.language.label(class_='form-label') }}
+              {{ form.language(class_='form-select') }}
+            </div>
+            <button type="submit" class="btn btn-success">Send</button>
+            {% if draft.reply_text %}
+              <a href="{{ url_for('main.tts', draft_id=draft.id) }}" class="btn btn-outline-secondary ms-2">Listen</a>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    {% else %}
+      <div class="alert alert-info">Draft is being generated. Please refresh the page shortly.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

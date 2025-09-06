@@ -1,0 +1,11 @@
+/* Custom styles for the AI Communication Assistant */
+body {
+  background-color: #f8f9fa;
+}
+.progress {
+  height: 1.2rem;
+}
+.progress-bar {
+  font-size: 0.8rem;
+  line-height: 1.2rem;
+}

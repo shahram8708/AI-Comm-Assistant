@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+<div class="row">
+  <div class="col-md-3">
+    <div class="card text-bg-primary mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Total Emails</h5>
+        <p class="card-text fs-3">{{ total_emails }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-success mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Resolved Threads</h5>
+        <p class="card-text fs-3">{{ resolved }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-warning mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Pending Threads</h5>
+        <p class="card-text fs-3">{{ pending }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-bg-danger mb-3">
+      <div class="card-body">
+        <h5 class="card-title">Urgent Threads</h5>
+        <p class="card-text fs-3">{{ urgent }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Sentiment Distribution</h5>
+        <canvas id="sentimentChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Thread Status</h5>
+        <canvas id="statusChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Average Response Time (min)</h5>
+        <p class="fs-3">{{ '%.1f'|format(avg_response_time) }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Top Threads by Priority</h5>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Subject</th>
+              <th scope="col">Sentiment</th>
+              <th scope="col">Urgency</th>
+              <th scope="col">Priority Score</th>
+              <th scope="col">Trust (%)</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for th in top_threads %}
+              <tr>
+                <td>{{ th.subject }}</td>
+                <td>{{ th.sentiment }}</td>
+                <td>{{ 'Yes' if th.urgency else 'No' }}</td>
+                <td>{{ th.priority_score }}</td>
+                <td>{{ '%.0f'|format(th.draft.coach_score if th.draft else 0) }}</td>
+                <td><a href="{{ url_for('main.thread_view', thread_id=th.id) }}" class="btn btn-sm btn-outline-primary">View</a></td>
+              </tr>
+            {% else %}
+              <tr><td colspan="5" class="text-center">No threads available.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+  new Chart(sentimentCtx, {
+    type: 'pie',
+    data: {
+      labels: ['Positive','Neutral','Negative'],
+      datasets: [{
+        data: [{{ sentiments['positive'] }}, {{ sentiments['neutral'] }}, {{ sentiments['negative'] }}],
+        backgroundColor: ['#198754','#0d6efd','#dc3545'],
+      }]
+    },
+    options: { responsive: true }
+  });
+  const statusCtx = document.getElementById('statusChart').getContext('2d');
+  new Chart(statusCtx, {
+    type: 'pie',
+    data: {
+      labels: ['Resolved','Pending','Urgent'],
+      datasets: [{
+        data: [{{ resolved }}, {{ pending }}, {{ urgent }}],
+        backgroundColor: ['#198754','#ffc107','#dc3545'],
+      }]
+    },
+    options: { responsive: true }
+  });
+});
+</script>
+{% endblock %}
