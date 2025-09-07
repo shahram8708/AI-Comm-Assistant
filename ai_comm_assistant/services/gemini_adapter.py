@@ -33,8 +33,8 @@ class GeminiAdapter:
             raise RuntimeError('GEMINI_API_KEY is not configured')
         genai.configure(api_key=api_key)
         # Create model instances
-        self.text_model = genai.GenerativeModel('gemini-pro')
-        self.vision_model = genai.GenerativeModel('gemini-pro-vision')
+        self.text_model = genai.GenerativeModel('gemini-1.5-pro')
+        self.vision_model = genai.GenerativeModel('gemini-1.5-pro')
         # Load whisper model lazily
         self._whisper_model = None
 

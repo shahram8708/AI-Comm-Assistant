@@ -6,7 +6,7 @@ import datetime as dt
 from typing import Optional, List
 
 from flask_login import UserMixin
-from sqlalchemy.dialects.postgresql import JSON, BYTEA
+from sqlalchemy import LargeBinary
 
 from .extensions import db
 
@@ -35,7 +35,7 @@ class KBEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    embedding = db.Column(BYTEA)  # store pickled embedding bytes
+    embedding = db.Column(LargeBinary, nullable=True)  # SQLite-compatible
     created_at = db.Column(db.DateTime, default=dt.datetime.utcnow)
 
 

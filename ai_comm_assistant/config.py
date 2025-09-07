@@ -45,7 +45,6 @@ class Config:
     # Slack notifications
     SLACK_WEBHOOK_URL = os.getenv('SLACK_WEBHOOK_URL', '')
 
-    # Behavioural flags
     OFFLINE_MODE = os.getenv('OFFLINE_MODE', 'false').lower() == 'true'
     PRIORITY_TIMEOUT_MINUTES = int(os.getenv('PRIORITY_TIMEOUT_MINUTES', '30'))
 

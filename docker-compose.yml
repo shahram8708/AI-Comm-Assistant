@@ -70,6 +70,24 @@ services:
       - redis
     command: celery -A ai_comm_assistant.tasks worker --loglevel=info
 
+  beat:
+    build: .
+    restart: always
+    env_file: .env
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - OFFLINE_MODE=${OFFLINE_MODE}
+    volumes:
+      - .:/app
+      - attachments:/app/attachments
+    depends_on:
+      - redis
+      - db
+    command: celery -A ai_comm_assistant.tasks beat --loglevel=info
+
 volumes:
   db_data:
   attachments:
